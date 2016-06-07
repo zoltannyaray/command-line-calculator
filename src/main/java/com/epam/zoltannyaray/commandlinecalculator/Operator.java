@@ -1,5 +1,13 @@
 package com.epam.zoltannyaray.commandlinecalculator;
 
-public interface Operator extends ExpressionPart {
+import java.util.List;
+
+public interface Operator {
+    
+    Double evaluate( List<Expression> operands );
+    
+    String getSign();
+    
+    OperatorType getType();
     
 }
