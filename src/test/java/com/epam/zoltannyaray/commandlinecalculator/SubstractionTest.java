@@ -14,7 +14,7 @@ public class SubstractionTest {
     
     @BeforeMethod
     public void init() {
-        substraction = Substraction.getInstance();
+        substraction = new Substraction();
     }
     
     

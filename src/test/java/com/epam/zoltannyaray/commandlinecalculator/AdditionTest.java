@@ -14,7 +14,7 @@ public class AdditionTest {
     
     @BeforeMethod
     public void init() {
-        addition = Addition.getInstance();
+        addition = new Addition();
     }
     
     

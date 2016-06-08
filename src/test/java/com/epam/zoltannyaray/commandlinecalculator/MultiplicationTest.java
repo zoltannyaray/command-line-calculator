@@ -14,7 +14,7 @@ public class MultiplicationTest {
     
     @BeforeMethod
     public void init() {
-        multiplication = Multiplication.getInstance();
+        multiplication = new Multiplication();
     }
     
     

@@ -5,17 +5,6 @@ import java.util.List;
 
 public class Multiplication implements Operator {
 
-    private Multiplication() {
-    }
-
-    private static class SingletonHolder {
-        public static final Multiplication INSTANCE = new Multiplication();
-    }
-    
-    public static Multiplication getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-    
     public Double evaluate(List<Expression> operands) {
         Expression firstOperand = operands.get(0);
         Double result = firstOperand.evaluate();

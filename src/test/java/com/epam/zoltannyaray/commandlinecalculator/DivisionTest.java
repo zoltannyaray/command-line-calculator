@@ -14,7 +14,7 @@ public class DivisionTest {
     
     @BeforeMethod
     public void init() {
-        division = Division.getInstance();
+        division = new Division();
     }
     
     

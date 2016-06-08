@@ -25,6 +25,7 @@ public class ExpressionBuilder {
         Pattern expressionPatternByOperator;
         List<Expression> operands = new ArrayList<Expression>();
         boolean rootExpressionFound = false;
+        boolean isExpressionCorrect = false;
         Operator operator = null;
         while ( !rootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext() ) {
             operator = operatorsInPrecedenceOrderLowestFirst.next();
@@ -44,8 +45,22 @@ public class ExpressionBuilder {
                 }
             }
         }
+        Expression result = null;
         if ( operator != null && rootExpressionFound ) {
-            return new ArithmeticExpression( operator, operands );
+            isExpressionCorrect = true;
+            result = new ArithmeticExpression( operator, operands );
+        }
+        else {
+            try {
+                Double value = Double.parseDouble(input);
+                isExpressionCorrect = true;
+                result = new Literal(value);
+            }
+            catch ( NumberFormatException e ) {
+            }
+        }
+        if ( isExpressionCorrect ) {
+            return result;
         }
         else {
             throw new IllegalArgumentException( "Wrong input" );
