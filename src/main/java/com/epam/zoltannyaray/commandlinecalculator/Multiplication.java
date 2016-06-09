@@ -3,7 +3,7 @@ package com.epam.zoltannyaray.commandlinecalculator;
 import java.util.List;
 
 
-public class Multiplication implements Operator {
+public class Multiplication extends AbstractOperator {
 
     public Double evaluate(List<Expression> operands) {
         Expression firstOperand = operands.get(0);

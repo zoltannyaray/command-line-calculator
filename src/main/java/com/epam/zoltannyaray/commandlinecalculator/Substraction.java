@@ -3,7 +3,7 @@ package com.epam.zoltannyaray.commandlinecalculator;
 import java.util.List;
 
 
-public class Substraction implements Operator {
+public class Substraction extends AbstractOperator {
 
     public Double evaluate(List<Expression> operands) {
         Expression firstOperand = operands.get(0);

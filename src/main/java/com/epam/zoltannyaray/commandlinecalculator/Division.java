@@ -2,7 +2,7 @@ package com.epam.zoltannyaray.commandlinecalculator;
 
 import java.util.List;
 
-public class Division implements Operator {
+public class Division extends AbstractOperator {
 
     public Double evaluate(List<Expression> operands) {
         Expression firstOperand = operands.get(0);

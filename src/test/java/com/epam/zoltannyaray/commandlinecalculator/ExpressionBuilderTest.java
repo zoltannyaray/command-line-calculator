@@ -3,6 +3,7 @@ package com.epam.zoltannyaray.commandlinecalculator;
 import static org.testng.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static org.mockito.Mockito.*;
 import org.testng.annotations.BeforeMethod;
@@ -39,13 +40,33 @@ public class ExpressionBuilderTest {
     @Test
     public void testBuildExpression1() {
         Expression result = expressionBuilder.buildExpression("1 + 2");
-        assertEquals(result.getClass(), ArithmeticExpression.class);
-        if (result instanceof ArithmeticExpression) {
-            assertEquals(((ArithmeticExpression) result).getOperator().getClass(), Addition.class);
-            assertEquals(((ArithmeticExpression) result).getOperands().size(), 2);
-            assertEquals(((ArithmeticExpression) result).getOperands().get(0), new Literal(1.0));
-            assertEquals(((ArithmeticExpression) result).getOperands().get(1), new Literal(2.0));
-        }
+        List<Expression> operands;
+        Expression root;
+        operands = new ArrayList<Expression>();
+        operands.add(new Literal(1.0));
+        operands.add(new Literal(2.0));
+        root = new ArithmeticExpression(new Addition(), operands);
+        assertTrue(result.equals(root));
+    }
+    
+    @Test
+    public void testBuildExpression2() {
+        Expression result = expressionBuilder.buildExpression("1 + 2 * 3");
+        List<Expression> operands;
+        Expression root;
+        Expression right;
+        Expression left;
+        operands = new ArrayList<Expression>();
+        operands.add( new Literal(2.0));
+        operands.add( new Literal(3.0));
+        root = new ArithmeticExpression(new Multiplication(), operands);
+        right = root;
+        left = new Literal(1.0);
+        operands = new ArrayList<Expression>();
+        operands.add(left);
+        operands.add(right);
+        root = new ArithmeticExpression(new Addition(), operands);
+        assertTrue(result.equals(root));
     }
 
 }

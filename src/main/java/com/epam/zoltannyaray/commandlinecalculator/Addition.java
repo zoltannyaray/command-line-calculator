@@ -2,7 +2,7 @@ package com.epam.zoltannyaray.commandlinecalculator;
 
 import java.util.List;
 
-public class Addition implements Operator {
+public class Addition extends AbstractOperator {
 
     public Double evaluate(List<Expression> operands) {
         Double result = 0.0;
