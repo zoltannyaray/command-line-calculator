@@ -1,10 +1,10 @@
 package com.epam.zoltannyaray.commandlinecalculator;
 
-public class Literal implements Expression {
+public class Constant implements Expression {
 
     private Double value;
 
-    public Literal(Double value) {
+    public Constant(Double value) {
         super();
         this.value = value;
     }
@@ -21,7 +21,7 @@ public class Literal implements Expression {
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
-        if (obj instanceof Literal && ((Literal) obj).value.equals(value)) {
+        if (obj instanceof Constant && ((Constant) obj).value.equals(value)) {
             result = true;
         }
         return result;

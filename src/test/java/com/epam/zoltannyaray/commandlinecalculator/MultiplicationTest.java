@@ -21,10 +21,10 @@ public class MultiplicationTest {
     @DataProvider(name = "inputExpectedResultMap")
     public Object[][] getInputExpectedResultMap() {
         return new Object[][]{
-            {Arrays.asList(new Literal(42.0)), 42.0},
-            {Arrays.asList(new Literal(1.0), new Literal(41.0)), 1.0 * 41.0},
-            {Arrays.asList(new Literal(-44.0), new Literal(2.0)), -44.0 * 2.0},
-            {Arrays.asList(new Literal(-44.0), new Literal(2.0), new Literal(84.0)), -44.0 * 2.0 * 84.0}
+            {Arrays.asList(new Constant(42.0)), 42.0},
+            {Arrays.asList(new Constant(1.0), new Constant(41.0)), 1.0 * 41.0},
+            {Arrays.asList(new Constant(-44.0), new Constant(2.0)), -44.0 * 2.0},
+            {Arrays.asList(new Constant(-44.0), new Constant(2.0), new Constant(84.0)), -44.0 * 2.0 * 84.0}
         };
     }
 

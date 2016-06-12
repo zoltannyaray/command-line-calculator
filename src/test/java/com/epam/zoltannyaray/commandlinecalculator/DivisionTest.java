@@ -21,7 +21,7 @@ public class DivisionTest {
     @DataProvider(name = "inputExpectedResultMap")
     public Object[][] getInputExpectedResultMap() {
         return new Object[][]{
-            {Arrays.asList(new Literal(42.0), new Literal(3.0)), 42.0/3.0}
+            {Arrays.asList(new Constant(42.0), new Constant(3.0)), 42.0/3.0}
         };
     }
 

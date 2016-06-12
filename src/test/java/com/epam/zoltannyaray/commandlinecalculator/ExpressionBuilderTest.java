@@ -1,11 +1,9 @@
 package com.epam.zoltannyaray.commandlinecalculator;
 
 import static org.testng.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import static org.mockito.Mockito.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -43,8 +41,8 @@ public class ExpressionBuilderTest {
         List<Expression> operands;
         Expression root;
         operands = new ArrayList<Expression>();
-        operands.add(new Literal(1.0));
-        operands.add(new Literal(2.0));
+        operands.add(new Constant(1.0));
+        operands.add(new Constant(2.0));
         root = new ArithmeticExpression(new Addition(), operands);
         assertTrue(result.equals(root));
     }
@@ -57,11 +55,11 @@ public class ExpressionBuilderTest {
         Expression right;
         Expression left;
         operands = new ArrayList<Expression>();
-        operands.add( new Literal(2.0));
-        operands.add( new Literal(3.0));
+        operands.add( new Constant(2.0));
+        operands.add( new Constant(3.0));
         root = new ArithmeticExpression(new Multiplication(), operands);
         right = root;
-        left = new Literal(1.0);
+        left = new Constant(1.0);
         operands = new ArrayList<Expression>();
         operands.add(left);
         operands.add(right);
@@ -77,16 +75,18 @@ public class ExpressionBuilderTest {
         Expression right;
         Expression left;
         operands = new ArrayList<Expression>();
-        operands.add( new Literal(1.0));
-        operands.add( new Literal(2.0));
+        operands.add( new Constant(1.0));
+        operands.add( new Constant(2.0));
         root = new ArithmeticExpression(new Addition(), operands);
         left = root;
-        right = new Literal(3.0);
+        right = new Constant(3.0);
         operands = new ArrayList<Expression>();
         operands.add(left);
         operands.add(right);
         root = new ArithmeticExpression(new Multiplication(), operands);
         assertTrue(result.equals(root));
     }
+    
+    
 
 }

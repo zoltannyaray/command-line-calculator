@@ -8,7 +8,7 @@ public class ArithmeticExpression implements Expression {
     private List<Expression> operands;
     private Operator operator;
     
-    public ArithmeticExpression( Operator operator, List<Expression> operands) {
+    public ArithmeticExpression(Operator operator, List<Expression> operands) {
         super();
         this.operator = operator;
         this.operands = operands;

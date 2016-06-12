@@ -8,19 +8,18 @@ import java.util.regex.Pattern;
 
 public class ExpressionBuilder {
 
-    private static final String STRIP_EXPRESSION_REGEX = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$";
-    private static final String EXPRESSION_REGEX = "(\\(.+\\)|[^\\(\\)]+)";
-    private static final String EXPRESSION_MATCH_LEFT_SIDE = "leftSide";
-    private static final String EXPRESSION_MATCH_RIGHT_SIDE = "rightSide";
-    
-    OperatorPrecedenceProvider operatorPrecedenceProvider;
-    
+    private static final String EXPRESSION_STRIP_REGEX = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$";
+    private static final String OPENING_PARENTHESES = "(";
+    private static final String CLOSING_PARENTHESES = ")";
+    private static final String PARENTHESES_REGEX = "[\\" + OPENING_PARENTHESES + "\\" + CLOSING_PARENTHESES + "]";
+    private OperatorPrecedenceProvider operatorPrecedenceProvider;
+
     public ExpressionBuilder(OperatorPrecedenceProvider operatorPrecedenceProvider) {
         super();
         this.operatorPrecedenceProvider = operatorPrecedenceProvider;
     }
 
-    public Expression buildExpression( String input ) {
+    public Expression buildExpression(String input) {
         String strippedInput = stripInputStringExpression(input);
         Iterator<Operator> operatorsInPrecedenceOrderLowestFirst = operatorPrecedenceProvider.getOperatorsInPrecedenceOrderLowestFirst().iterator();
         Pattern expressionPatternByOperator;
@@ -28,64 +27,78 @@ public class ExpressionBuilder {
         boolean rootExpressionFound = false;
         boolean isExpressionCorrect = false;
         Operator operator = null;
-        while ( !rootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext() ) {
+        while (!rootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext()) {
             operator = operatorsInPrecedenceOrderLowestFirst.next();
-            expressionPatternByOperator = getExpressionPatternByOperator(operator);
+            expressionPatternByOperator = Pattern.compile(Pattern.quote(operator.getSign()));
             Matcher matcher = expressionPatternByOperator.matcher(strippedInput);
-            if ( matcher.find() ) {
+            while (!rootExpressionFound && matcher.find()) {
                 rootExpressionFound = true;
-                if ( operator.getType().isOperandNeededOnLeftSide() ) {
-                    String operandString = matcher.group(EXPRESSION_MATCH_LEFT_SIDE);
-                    Expression operandExpression = buildExpression(operandString);
-                    operands.add(operandExpression);
+                if (operator.getType().isOperandNeededOnLeftSide()) {
+                    String operandString = strippedInput.substring(0, matcher.start() - 1);
+                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                        Expression operandExpression = buildExpression(operandString);
+                        operands.add(operandExpression);    
+                    }
+                    else {
+                        rootExpressionFound = false;
+                    }
                 }
-                if ( operator.getType().isOperandNeededOnRightSide() ) {
-                    String operandString = matcher.group(EXPRESSION_MATCH_RIGHT_SIDE);
-                    Expression operandExpression = buildExpression(operandString);
-                    operands.add(operandExpression);
+                if (rootExpressionFound && operator.getType().isOperandNeededOnRightSide()) {
+                    String operandString = strippedInput.substring(matcher.end() + 1);
+                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                        Expression operandExpression = buildExpression(operandString);
+                        operands.add(operandExpression);    
+                    }
+                    else {
+                        rootExpressionFound = false;
+                    }
                 }
             }
         }
         Expression result = null;
-        if ( operator != null && rootExpressionFound ) {
+        if (operator != null && rootExpressionFound) {
             isExpressionCorrect = true;
-            result = new ArithmeticExpression( operator, operands );
-        }
-        else {
+            result = new ArithmeticExpression(operator, operands);
+        } else {
             try {
                 Double value = Double.parseDouble(input);
                 isExpressionCorrect = true;
-                result = new Literal(value);
-            }
-            catch ( NumberFormatException e ) {
+                result = new Constant(value);
+            } catch (NumberFormatException e) {
             }
         }
-        if ( isExpressionCorrect ) {
+        if (isExpressionCorrect) {
             return result;
-        }
-        else {
-            throw new IllegalArgumentException( "Wrong input" );
+        } else {
+            throw new IllegalArgumentException("Wrong input");
         }
     }
-    
-    public String stripInputStringExpression( String input ) {
-        String result = new String( input );
-        while ( result.matches(STRIP_EXPRESSION_REGEX) ) {
-            result = result.replaceAll(STRIP_EXPRESSION_REGEX, "$1");
+
+    public String stripInputStringExpression(String input) {
+        String result = new String(input);
+        while (result.matches(EXPRESSION_STRIP_REGEX)) {
+            result = result.replaceAll(EXPRESSION_STRIP_REGEX, "$1");
         }
         return result;
     }
-    
-    public Pattern getExpressionPatternByOperator( Operator operator ) {
-        String expressionRegex = "";
-        if ( operator.getType().isOperandNeededOnLeftSide() ) {
-            expressionRegex += "^(?<" + EXPRESSION_MATCH_LEFT_SIDE + ">" + EXPRESSION_REGEX + ")";
+
+    private boolean isCorrectlyParenthesizedExpression(String input) {
+        int openParenthesesCount = 0;
+        Pattern parenthesesPattern = Pattern.compile(PARENTHESES_REGEX);
+        Matcher matcher = parenthesesPattern.matcher(input);
+        while (matcher.find() && openParenthesesCount >= 0) {
+            String match = matcher.group();
+            if (match.equals(OPENING_PARENTHESES)) {
+                openParenthesesCount++;
+            } else if (match.equals(CLOSING_PARENTHESES)) {
+                openParenthesesCount--;
+            }
         }
-        expressionRegex += "\\s*" + Pattern.quote(operator.getSign()) + "\\s*";
-        if ( operator.getType().isOperandNeededOnRightSide() ) {
-            expressionRegex += "(?<" + EXPRESSION_MATCH_RIGHT_SIDE + ">" + EXPRESSION_REGEX + ")$";
+        boolean result = true;
+        if (openParenthesesCount != 0) {
+            result = false;
         }
-        return Pattern.compile(expressionRegex);
+        return result;
     }
-    
+
 }
