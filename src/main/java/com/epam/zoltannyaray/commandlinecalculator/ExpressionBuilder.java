@@ -8,7 +8,8 @@ import java.util.regex.Pattern;
 
 public class ExpressionBuilder {
 
-    private static final String STRIP_EXPRESSION_REGEX = "(^[\\(\\s]+|[\\s\\)]+$)";
+    private static final String STRIP_EXPRESSION_REGEX = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$";
+    private static final String EXPRESSION_REGEX = "(\\(.+\\)|[^\\(\\)]+)";
     private static final String EXPRESSION_MATCH_LEFT_SIDE = "leftSide";
     private static final String EXPRESSION_MATCH_RIGHT_SIDE = "rightSide";
     
@@ -68,17 +69,21 @@ public class ExpressionBuilder {
     }
     
     public String stripInputStringExpression( String input ) {
-        return input.replaceAll(STRIP_EXPRESSION_REGEX, "");
+        String result = new String( input );
+        while ( result.matches(STRIP_EXPRESSION_REGEX) ) {
+            result = result.replaceAll(STRIP_EXPRESSION_REGEX, "$1");
+        }
+        return result;
     }
     
     public Pattern getExpressionPatternByOperator( Operator operator ) {
         String expressionRegex = "";
         if ( operator.getType().isOperandNeededOnLeftSide() ) {
-            expressionRegex += "(?<" + EXPRESSION_MATCH_LEFT_SIDE + ">.+)";
+            expressionRegex += "^(?<" + EXPRESSION_MATCH_LEFT_SIDE + ">" + EXPRESSION_REGEX + ")";
         }
-        expressionRegex += Pattern.quote(operator.getSign());
+        expressionRegex += "\\s*" + Pattern.quote(operator.getSign()) + "\\s*";
         if ( operator.getType().isOperandNeededOnRightSide() ) {
-            expressionRegex += "(?<" + EXPRESSION_MATCH_RIGHT_SIDE + ">.+)";
+            expressionRegex += "(?<" + EXPRESSION_MATCH_RIGHT_SIDE + ">" + EXPRESSION_REGEX + ")$";
         }
         return Pattern.compile(expressionRegex);
     }

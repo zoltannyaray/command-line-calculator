@@ -68,5 +68,25 @@ public class ExpressionBuilderTest {
         root = new ArithmeticExpression(new Addition(), operands);
         assertTrue(result.equals(root));
     }
+    
+    @Test
+    public void testBuildExpression3() {
+        Expression result = expressionBuilder.buildExpression("(1 + 2) * 3");
+        List<Expression> operands;
+        Expression root;
+        Expression right;
+        Expression left;
+        operands = new ArrayList<Expression>();
+        operands.add( new Literal(1.0));
+        operands.add( new Literal(2.0));
+        root = new ArithmeticExpression(new Addition(), operands);
+        left = root;
+        right = new Literal(3.0);
+        operands = new ArrayList<Expression>();
+        operands.add(left);
+        operands.add(right);
+        root = new ArithmeticExpression(new Multiplication(), operands);
+        assertTrue(result.equals(root));
+    }
 
 }
