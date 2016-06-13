@@ -12,6 +12,8 @@ public class ExpressionBuilder {
     private static final String OPENING_PARENTHESES = "(";
     private static final String CLOSING_PARENTHESES = ")";
     private static final String PARENTHESES_REGEX = "[\\" + OPENING_PARENTHESES + "\\" + CLOSING_PARENTHESES + "]";
+    private static final String PARENTHESES_AND_WHITESPACES_REGEX = "\\s*[\\" + OPENING_PARENTHESES + "\\" + CLOSING_PARENTHESES + "]\\s*";
+    private static final String CLOSING_PARENTHESES_TILL_END_REGEX = "[" + CLOSING_PARENTHESES + "\\s]+$";
     private OperatorPrecedenceProvider operatorPrecedenceProvider;
 
     public ExpressionBuilder(OperatorPrecedenceProvider operatorPrecedenceProvider) {
@@ -35,21 +37,19 @@ public class ExpressionBuilder {
                 rootExpressionFound = true;
                 if (operator.getType().isOperandNeededOnLeftSide()) {
                     String operandString = strippedInput.substring(0, matcher.start() - 1);
-                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                    if (isCorrectlyParenthesizedExpression(operandString)) {
                         Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);    
-                    }
-                    else {
+                        operands.add(operandExpression);
+                    } else {
                         rootExpressionFound = false;
                     }
                 }
                 if (rootExpressionFound && operator.getType().isOperandNeededOnRightSide()) {
                     String operandString = strippedInput.substring(matcher.end() + 1);
-                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                    if (isCorrectlyParenthesizedExpression(operandString)) {
                         Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);    
-                    }
-                    else {
+                        operands.add(operandExpression);
+                    } else {
                         rootExpressionFound = false;
                     }
                 }
@@ -75,11 +75,36 @@ public class ExpressionBuilder {
     }
 
     public String stripInputStringExpression(String input) {
-        String result = new String(input);
-        while (result.matches(EXPRESSION_STRIP_REGEX)) {
-            result = result.replaceAll(EXPRESSION_STRIP_REGEX, "$1");
+        int openParenthesesCount = 0;
+        Pattern parenthesesPattern = Pattern.compile(PARENTHESES_REGEX);
+        //Pattern onlyClosingParenthesesPattern = Pattern.compile(CLOSING_PARENTHESES_TILL_END_REGEX);
+        Matcher matcher = parenthesesPattern.matcher(input);
+        boolean isParenthesesCountReachedZero = false;
+        boolean isOnlyClosingParenthesesRemaining = false;
+        while (matcher.find() && !isParenthesesCountReachedZero && !isOnlyClosingParenthesesRemaining) {
+            String remainingInput = input.substring(matcher.start());
+            if (remainingInput.matches(CLOSING_PARENTHESES_TILL_END_REGEX)) {
+                isOnlyClosingParenthesesRemaining = true;
+            }
+            else {
+                String match = matcher.group();
+                if (match.equals(OPENING_PARENTHESES)) {
+                    openParenthesesCount++;
+                } else if (match.equals(CLOSING_PARENTHESES)) {
+                    openParenthesesCount--;
+                }
+                if (openParenthesesCount == 0) {
+                    isParenthesesCountReachedZero = true;
+                }
+            }
         }
-        return result;
+        if (isOnlyClosingParenthesesRemaining && !isParenthesesCountReachedZero) {
+            String stripRegex = "^" + PARENTHESES_AND_WHITESPACES_REGEX + "{" + openParenthesesCount + "}.+" + PARENTHESES_AND_WHITESPACES_REGEX + "{" + openParenthesesCount + "}";
+            return input.replaceAll(stripRegex, "");
+        }
+        else {
+            return input;
+        }
     }
 
     private boolean isCorrectlyParenthesizedExpression(String input) {
