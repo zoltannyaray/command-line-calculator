@@ -8,14 +8,15 @@ import java.util.regex.Pattern;
 
 public class ExpressionBuilder {
 
-    private static final String EXPRESSION_STRIP_REGEX = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$";
-    private static final String OPENING_PARENTHESES = "(";
-    private static final String CLOSING_PARENTHESES = ")";
-    private static final String PARENTHESES_REGEX = "[\\" + OPENING_PARENTHESES + "\\" + CLOSING_PARENTHESES + "]";
+    private static final String REGEX_EXPRESSION_STRIP_GROUP_INSIDE_PARENTHESES = "insideParenthesesGroup";
+    private static final String REGEX_EXPRESSION_STRIP = "^\\s*\\(\\s*(?<" + REGEX_EXPRESSION_STRIP_GROUP_INSIDE_PARENTHESES + ">.+?)\\s*\\)\\s*$";
+    private static final String CHARACTER_OPENING_PARENTHESES = "(";
+    private static final String CHARACTER_CLOSING_PARENTHESES = ")";
+    private static final String REGEX_ONLY_PARENTHESES = "[\\" + CHARACTER_OPENING_PARENTHESES + "\\" + CHARACTER_CLOSING_PARENTHESES + "]";
+
     private OperatorPrecedenceProvider operatorPrecedenceProvider;
 
     public ExpressionBuilder(OperatorPrecedenceProvider operatorPrecedenceProvider) {
-        super();
         this.operatorPrecedenceProvider = operatorPrecedenceProvider;
     }
 
@@ -25,7 +26,6 @@ public class ExpressionBuilder {
         Pattern expressionPatternByOperator;
         List<Expression> operands = new ArrayList<Expression>();
         boolean rootExpressionFound = false;
-        boolean isExpressionCorrect = false;
         Operator operator = null;
         while (!rootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext()) {
             operator = operatorsInPrecedenceOrderLowestFirst.next();
@@ -34,34 +34,33 @@ public class ExpressionBuilder {
             while (!rootExpressionFound && matcher.find()) {
                 rootExpressionFound = true;
                 if (operator.getType().isOperandNeededOnLeftSide()) {
-                    String operandString = strippedInput.substring(0, matcher.start() - 1);
-                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                    String operandString = strippedInput.substring(0, matcher.start());
+                    if (operandString.length() > 0 && isCorrectlyParenthesizedExpression(operandString)) {
                         Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);    
-                    }
-                    else {
+                        operands.add(operandExpression);
+                    } else {
                         rootExpressionFound = false;
                     }
                 }
                 if (rootExpressionFound && operator.getType().isOperandNeededOnRightSide()) {
-                    String operandString = strippedInput.substring(matcher.end() + 1);
-                    if ( isCorrectlyParenthesizedExpression(operandString)) {
+                    String operandString = strippedInput.substring(matcher.end());
+                    if (operandString.length() > 0 && isCorrectlyParenthesizedExpression(operandString)) {
                         Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);    
-                    }
-                    else {
+                        operands.add(operandExpression);
+                    } else {
                         rootExpressionFound = false;
                     }
                 }
             }
         }
         Expression result = null;
+        boolean isExpressionCorrect = false;
         if (operator != null && rootExpressionFound) {
             isExpressionCorrect = true;
             result = new ArithmeticExpression(operator, operands);
         } else {
             try {
-                Double value = Double.parseDouble(input);
+                Double value = Double.parseDouble(strippedInput);
                 isExpressionCorrect = true;
                 result = new Constant(value);
             } catch (NumberFormatException e) {
@@ -70,27 +69,30 @@ public class ExpressionBuilder {
         if (isExpressionCorrect) {
             return result;
         } else {
-            throw new IllegalArgumentException("Wrong input");
+            throw new InvalidExpressionException();
         }
     }
 
     public String stripInputStringExpression(String input) {
-        String result = new String(input);
-        while (result.matches(EXPRESSION_STRIP_REGEX)) {
-            result = result.replaceAll(EXPRESSION_STRIP_REGEX, "$1");
+        String strippedInput = new String(input);
+        Pattern pattern = Pattern.compile(REGEX_EXPRESSION_STRIP);
+        Matcher matcher = pattern.matcher(strippedInput);
+        while (matcher.find() && isCorrectlyParenthesizedExpression(matcher.group(REGEX_EXPRESSION_STRIP_GROUP_INSIDE_PARENTHESES))) {
+            strippedInput = matcher.group(REGEX_EXPRESSION_STRIP_GROUP_INSIDE_PARENTHESES);
+            matcher = pattern.matcher(strippedInput);
         }
-        return result;
+        return strippedInput;
     }
 
     private boolean isCorrectlyParenthesizedExpression(String input) {
         int openParenthesesCount = 0;
-        Pattern parenthesesPattern = Pattern.compile(PARENTHESES_REGEX);
-        Matcher matcher = parenthesesPattern.matcher(input);
+        Pattern pattern = Pattern.compile(REGEX_ONLY_PARENTHESES);
+        Matcher matcher = pattern.matcher(input);
         while (matcher.find() && openParenthesesCount >= 0) {
             String match = matcher.group();
-            if (match.equals(OPENING_PARENTHESES)) {
+            if (match.equals(CHARACTER_OPENING_PARENTHESES)) {
                 openParenthesesCount++;
-            } else if (match.equals(CLOSING_PARENTHESES)) {
+            } else if (match.equals(CHARACTER_CLOSING_PARENTHESES)) {
                 openParenthesesCount--;
             }
         }

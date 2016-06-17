@@ -11,6 +11,7 @@ public class StandardOperatorPrecedenceProvider implements OperatorPrecedencePro
         operators.add(new Substraction());
         operators.add(new Multiplication());
         operators.add(new Division());
+        operators.add(new Minus());
         return operators;
     }
 

@@ -26,7 +26,12 @@ public class ExpressionBuilderTest {
 
     @DataProvider(name = "testDataForStripInputStringExpression")
     public Object[][] getTestDataForStripInputStringExpression() {
-        return new Object[][]{{"  (((1 + 2))) ", "1 + 2"}};
+        return new Object[][]{
+            {"  (((1 + 2))) ", "1 + 2"},
+            {" ((1 + 2) * 3 ) ", "(1 + 2) * 3"},
+            {"  ( ( ( ( ( 1 + 2 ) * 3 ) ) ))", "( 1 + 2 ) * 3"},
+            {"(0+(1+2)*3+(4+(5*6)))", "0+(1+2)*3+(4+(5*6))"}
+        };
     }
 
     @Test(dataProvider = "testDataForStripInputStringExpression")
