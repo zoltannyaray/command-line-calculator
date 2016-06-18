@@ -22,40 +22,45 @@ public class ExpressionBuilder {
 
     public Expression buildExpression(String input) {
         String strippedInput = stripInputStringExpression(input);
+        if (!isCorrectlyParenthesizedExpression(strippedInput) || strippedInput.length() == 0) {
+            throw new InvalidExpressionException();
+        }
         Iterator<Operator> operatorsInPrecedenceOrderLowestFirst = operatorPrecedenceProvider.getOperatorsInPrecedenceOrderLowestFirst().iterator();
-        Pattern expressionPatternByOperator;
         List<Expression> operands = new ArrayList<Expression>();
-        boolean rootExpressionFound = false;
+        boolean isCorrectRootExpressionFound = false;
         Operator operator = null;
-        while (!rootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext()) {
+        while (!isCorrectRootExpressionFound && operatorsInPrecedenceOrderLowestFirst.hasNext()) {
             operator = operatorsInPrecedenceOrderLowestFirst.next();
-            expressionPatternByOperator = Pattern.compile(Pattern.quote(operator.getSign()));
+            Pattern expressionPatternByOperator = Pattern.compile(Pattern.quote(operator.getSign()));
             Matcher matcher = expressionPatternByOperator.matcher(strippedInput);
-            while (!rootExpressionFound && matcher.find()) {
-                rootExpressionFound = true;
+            while (!isCorrectRootExpressionFound && matcher.find()) {
+                isCorrectRootExpressionFound = true;
                 if (operator.getType().isOperandNeededOnLeftSide()) {
-                    String operandString = strippedInput.substring(0, matcher.start());
-                    if (operandString.length() > 0 && isCorrectlyParenthesizedExpression(operandString)) {
-                        Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);
-                    } else {
-                        rootExpressionFound = false;
+                    try {
+                        operands.add(buildExpression(strippedInput.substring(0, matcher.start())));
+                    } catch (InvalidExpressionException e) {
+                        isCorrectRootExpressionFound = false;
                     }
                 }
-                if (rootExpressionFound && operator.getType().isOperandNeededOnRightSide()) {
-                    String operandString = strippedInput.substring(matcher.end());
-                    if (operandString.length() > 0 && isCorrectlyParenthesizedExpression(operandString)) {
-                        Expression operandExpression = buildExpression(operandString);
-                        operands.add(operandExpression);
-                    } else {
-                        rootExpressionFound = false;
+                if (isCorrectRootExpressionFound && operator.getType().isOperandNeededOnRightSide()) {
+                    try {
+                        operands.add(buildExpression(strippedInput.substring(matcher.end())));
+                    } catch (InvalidExpressionException e) {
+                        isCorrectRootExpressionFound = false;
                     }
                 }
             }
         }
+        if (!isCorrectRootExpressionFound) {
+            operator = null;
+        }
+        return composeExpression(operator, operands, strippedInput);
+    }
+
+    private Expression composeExpression(Operator operator, List<Expression> operands, String strippedInput) {
         Expression result = null;
         boolean isExpressionCorrect = false;
-        if (operator != null && rootExpressionFound) {
+        if (operator != null) {
             isExpressionCorrect = true;
             result = new ArithmeticExpression(operator, operands);
         } else {
