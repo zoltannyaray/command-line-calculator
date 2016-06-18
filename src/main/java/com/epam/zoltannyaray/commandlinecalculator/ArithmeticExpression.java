@@ -7,17 +7,17 @@ public class ArithmeticExpression implements Expression {
 
     private List<Expression> operands;
     private Operator operator;
-    
+
     public ArithmeticExpression(Operator operator, List<Expression> operands) {
         super();
         this.operator = operator;
         this.operands = operands;
     }
-    
+
     public Double evaluate() {
         return operator.evaluate(operands);
     }
-    
+
     public List<Expression> getOperands() {
         return new ArrayList<Expression>(operands);
     }
@@ -29,17 +29,13 @@ public class ArithmeticExpression implements Expression {
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
-        if (obj instanceof ArithmeticExpression ) {
+        if (obj instanceof ArithmeticExpression) {
             ArithmeticExpression castedObj = (ArithmeticExpression) obj;
-            if ( castedObj.operator.equals(operator)) {
-                if ( castedObj.operands.containsAll(operands) && operands.containsAll(castedObj.operands)) {
-                    result = true;
-                }
+            if (operator.equals(castedObj.operator) && operands.equals(castedObj.operands)) {
+                result = true;
             }
         }
         return result;
     }
 
-    
-    
 }
